@@ -132,7 +132,7 @@ export default function DocumentSigner({ fileHash, fileName, onDocumentStored }:
         <div className="text-sm text-gray-600 space-y-1">
           <p><strong>Archivo:</strong> {fileName}</p>
           <p><strong>Hash:</strong> <code className="text-xs bg-gray-200 px-1 rounded">{fileHash}</code></p>
-          <p><strong>Wallet:</strong> {currentWallet.address}</p>
+          <p><strong>Wallet:</strong> {currentWallet?.address}</p>
         </div>
       </div>
 

@@ -68,7 +68,7 @@ export function useContract() {
         signer
       });
 
-      const tx = await contractWithSigner.storeDocumentHash(
+      const tx = await (contractWithSigner as any).storeDocumentHash(
         hash,
         timestamp,
         signature,
@@ -102,7 +102,7 @@ export function useContract() {
     }
 
     try {
-      const isValid = await contract.verifyDocument(hash, signer, signature);
+      const isValid = await (contract as any).verifyDocument(hash, signer, signature);
       console.log('Verificación resultado:', isValid);
       return isValid;
     } catch (error) {
@@ -118,7 +118,7 @@ export function useContract() {
     }
 
     try {
-      const document = await contract.getDocumentInfo(hash);
+      const document = await (contract as any).getDocumentInfo(hash);
       
       return {
         hash: document.hash,
@@ -139,7 +139,7 @@ export function useContract() {
     }
 
     try {
-      return await contract.isDocumentStored(hash);
+      return await (contract as any).isDocumentStored(hash);
     } catch (error) {
       console.error('Error verificando si documento está almacenado:', error);
       throw error;
@@ -153,7 +153,7 @@ export function useContract() {
     }
 
     try {
-      const count = await contract.getDocumentCount();
+      const count = await (contract as any).getDocumentCount();
       return Number(count);
     } catch (error) {
       console.error('Error obteniendo conteo de documentos:', error);
@@ -168,7 +168,7 @@ export function useContract() {
     }
 
     try {
-      return await contract.getDocumentHashByIndex(index);
+      return await (contract as any).getDocumentHashByIndex(index);
     } catch (error) {
       console.error('Error obteniendo hash por índice:', error);
       throw error;
