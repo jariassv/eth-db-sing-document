@@ -20,7 +20,7 @@
 }
 
 body {
-  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%);
+  background: linear-gradient(135deg, #f1f5f9 0%, #f8fafc 50%, #f1f5f9 100%);
   font-family: var(--font-inter), var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   color: var(--foreground);

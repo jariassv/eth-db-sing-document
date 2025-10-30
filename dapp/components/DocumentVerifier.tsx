@@ -112,7 +112,7 @@ export default function DocumentVerifier() {
 
   // Formatear dirección
   const formatAddress = (address: string): string => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    return `${address.slice(0, 5)}...${address.slice(-5)}`;
   };
 
   return (
@@ -175,31 +175,31 @@ export default function DocumentVerifier() {
 
       {/* Verification Result */}
       {result && (
-        <div className={`card ${
-          result.isValid ? 'border-green-200 bg-green-50/50' : 'border-red-200 bg-red-50/50'
+        <div className={`bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 ${
+          result.isValid ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50'
         }`}>
           <div className="flex items-center space-x-3 mb-6">
-            <div className={`p-2 rounded-lg ${
-              result.isValid ? 'bg-green-100' : 'bg-red-100'
+            <div className={`p-3 rounded-xl shadow-md ${
+              result.isValid ? 'bg-emerald-500' : 'bg-rose-500'
             }`}>
               {result.isValid ? (
-                <CheckCircle className="h-6 w-6 text-green-600" />
+                <CheckCircle className="h-6 w-6 text-white" />
               ) : (
-                <XCircle className="h-6 w-6 text-red-600" />
+                <XCircle className="h-6 w-6 text-white" />
               )}
             </div>
             <h3 className={`text-xl font-bold ${
-              result.isValid ? 'text-green-900' : 'text-red-900'
+              result.isValid ? 'text-emerald-900' : 'text-rose-900'
             }`}>
               {result.isValid ? '✅ Document VALID' : '❌ Document INVALID'}
             </h3>
           </div>
 
           {result.error && (
-            <div className="status-error p-4 rounded-xl mb-6">
+            <div className="bg-rose-100 border-2 border-rose-300 p-4 rounded-xl mb-6">
               <div className="flex items-center space-x-3">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                <p className="text-sm font-medium text-red-800">{result.error}</p>
+                <AlertCircle className="h-5 w-5 text-rose-700" />
+                <p className="text-sm font-semibold text-rose-900">{result.error}</p>
               </div>
             </div>
           )}
@@ -233,8 +233,8 @@ export default function DocumentVerifier() {
                       <span className="text-sm font-medium text-gray-600">Signer Address</span>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-3">
-                      <code className="text-sm font-mono text-gray-700">
-                        {result.document.signer}
+                      <code className="text-sm font-mono text-gray-700 break-all">
+                        {formatAddress(result.document.signer)}
                       </code>
                     </div>
                   </div>

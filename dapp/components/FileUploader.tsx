@@ -177,9 +177,9 @@ export default function FileUploader({ onFileHash, disabled = false }: FileUploa
 
       {/* Error Message */}
       {error && (
-        <div className="status-error p-4 rounded-xl flex items-center space-x-3">
-          <AlertCircle className="h-5 w-5 text-red-600" />
-          <p className="text-sm font-medium">{error}</p>
+        <div className="bg-rose-100 border-2 border-rose-400 p-4 rounded-xl flex items-center space-x-3">
+          <AlertCircle className="h-5 w-5 text-rose-700" />
+          <p className="text-sm font-semibold text-rose-900">{error}</p>
         </div>
       )}
 

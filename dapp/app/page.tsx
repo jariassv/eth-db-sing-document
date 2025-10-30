@@ -169,7 +169,7 @@ function AppContent() {
                         <div>
                           <p className="font-semibold text-gray-900">Wallet {index}</p>
                           <p className="text-sm text-gray-500 font-mono">
-                            {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
+                            {wallet.address.slice(0, 5)}...{wallet.address.slice(-5)}
                           </p>
                         </div>
                       </div>

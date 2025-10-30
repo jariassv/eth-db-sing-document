@@ -160,8 +160,8 @@ export default function DocumentSigner({ fileHash, fileName, onDocumentStored }:
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Wallet</p>
-              <p className="text-sm font-mono text-gray-900">
-                {currentWallet?.address}
+              <p className="text-sm font-mono text-gray-900 break-all">
+                {currentWallet?.address ? `${currentWallet.address.slice(0, 5)}...${currentWallet.address.slice(-5)}` : ''}
               </p>
             </div>
           </div>
@@ -256,22 +256,22 @@ export default function DocumentSigner({ fileHash, fileName, onDocumentStored }:
 
       {/* Success Message */}
       {success && (
-        <div className="status-success p-4 rounded-xl flex items-start space-x-3">
-          <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+        <div className="bg-emerald-100 border-2 border-emerald-400 p-4 rounded-xl flex items-start space-x-3">
+          <CheckCircle className="h-5 w-5 text-emerald-700 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-green-800">Success!</p>
-            <p className="text-sm text-green-700 whitespace-pre-line">{success}</p>
+            <p className="text-sm font-semibold text-emerald-900">Success!</p>
+            <p className="text-sm text-emerald-800 whitespace-pre-line">{success}</p>
           </div>
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="status-error p-4 rounded-xl flex items-start space-x-3">
-          <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+        <div className="bg-rose-100 border-2 border-rose-400 p-4 rounded-xl flex items-start space-x-3">
+          <AlertCircle className="h-5 w-5 text-rose-700 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-red-800">Error</p>
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm font-semibold text-rose-900">Error</p>
+            <p className="text-sm text-rose-800">{error}</p>
           </div>
         </div>
       )}

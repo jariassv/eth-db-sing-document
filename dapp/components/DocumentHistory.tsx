@@ -44,7 +44,7 @@ export default function DocumentHistory() {
 
   // Formatear dirección
   const formatAddress = (address: string): string => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    return `${address.slice(0, 5)}...${address.slice(-5)}`;
   };
 
   // Formatear hash
@@ -59,7 +59,7 @@ export default function DocumentHistory() {
 
   if (!isConnected) {
     return (
-      <div className="card text-center py-12">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl text-center py-12">
         <div className="p-4 bg-yellow-100 rounded-2xl w-fit mx-auto mb-6">
           <AlertCircle className="h-12 w-12 text-yellow-600" />
         </div>
@@ -90,15 +90,15 @@ export default function DocumentHistory() {
 
       {/* Error */}
       {error && (
-        <div className="status-error p-4 rounded-xl flex items-center space-x-3">
-          <AlertCircle className="h-5 w-5 text-red-600" />
-          <p className="text-sm font-medium">{error}</p>
+        <div className="bg-rose-100 border-2 border-rose-400 p-4 rounded-xl flex items-center space-x-3">
+          <AlertCircle className="h-5 w-5 text-rose-700" />
+          <p className="text-sm font-semibold text-rose-900">{error}</p>
         </div>
       )}
 
       {/* Loading */}
       {isLoading && (
-        <div className="card text-center py-12">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl text-center py-12">
           <div className="flex flex-col items-center space-y-4">
             <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
             <p className="text-lg font-medium text-gray-900">Loading documents...</p>
@@ -136,7 +136,7 @@ export default function DocumentHistory() {
               </div>
 
               {/* Documents Table */}
-              <div className="card overflow-hidden">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
