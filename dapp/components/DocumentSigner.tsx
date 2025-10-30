@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { PenTool, CheckCircle, AlertCircle, Loader2, Shield, Database, Wallet } from 'lucide-react';
 import { useMetaMask } from '@/contexts/MetaMaskContext';
 import { useContract } from '@/hooks/useContract';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface DocumentSignerProps {
   fileHash: string;
@@ -20,6 +21,8 @@ export default function DocumentSigner({ fileHash, fileName, onDocumentStored }:
   const [isStoring, setIsStoring] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  const [confirmSignOpen, setConfirmSignOpen] = useState(false);
+  const [confirmStoreOpen, setConfirmStoreOpen] = useState(false);
 
   // Firmar el documento
   const handleSignDocument = async () => {
@@ -33,28 +36,17 @@ export default function DocumentSigner({ fileHash, fileName, onDocumentStored }:
       return;
     }
 
-    setIsSigning(true);
     setError('');
     setSuccess('');
+    setConfirmSignOpen(true);
+  };
 
+  const confirmSign = async () => {
+    if (!currentWallet || !fileHash) return;
+    setConfirmSignOpen(false);
+    setIsSigning(true);
     try {
-      // Crear mensaje a firmar (hash del documento)
       const messageToSign = `Firmando documento: ${fileHash}`;
-      
-      // Mostrar confirmación
-      const confirmed = window.confirm(
-        `¿Estás seguro de que quieres firmar este documento?\n\n` +
-        `Archivo: ${fileName}\n` +
-        `Hash: ${fileHash}\n` +
-        `Wallet: ${currentWallet.address}`
-      );
-
-      if (!confirmed) {
-        setIsSigning(false);
-        return;
-      }
-
-      // Firmar el mensaje
       const sig = await signMessage(messageToSign);
       setSignature(sig);
       setSuccess('Documento firmado exitosamente!');
@@ -73,43 +65,34 @@ export default function DocumentSigner({ fileHash, fileName, onDocumentStored }:
       return;
     }
 
-    setIsStoring(true);
     setError('');
     setSuccess('');
+    setConfirmStoreOpen(true);
+  };
 
+  const confirmStore = async () => {
+    if (!currentWallet || !signature) return;
+    setConfirmStoreOpen(false);
+    setIsStoring(true);
     try {
-      // Mostrar confirmación
-      const confirmed = window.confirm(
-        `¿Estás seguro de que quieres almacenar este documento en la blockchain?\n\n` +
-        `Esto costará gas y no se puede deshacer.\n\n` +
-        `Hash: ${fileHash}\n` +
-        `Firmante: ${currentWallet.address}`
-      );
-
-      if (!confirmed) {
-        setIsStoring(false);
-        return;
-      }
-
-      // Obtener timestamp actual
       const timestamp = Math.floor(Date.now() / 1000);
-
-      // Almacenar en blockchain
       const result = await storeDocumentHash(
         fileHash,
         timestamp,
         signature,
         currentWallet.address
       );
-
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
       setSuccess(`Documento almacenado exitosamente!\n\nHash de transacción: ${result.txHash}`);
       onDocumentStored(result.txHash);
-      
-      // Limpiar estado
       setSignature('');
     } catch (error) {
-      console.error('Error almacenando documento:', error);
-      setError('Error al almacenar el documento en blockchain');
+      const err = error as any;
+      const reason = err?.message || err?.shortMessage || err?.reason || 'Error al almacenar el documento en blockchain';
+      setError(reason);
     } finally {
       setIsStoring(false);
     }
@@ -254,6 +237,37 @@ export default function DocumentSigner({ fileHash, fileName, onDocumentStored }:
         </div>
       )}
 
+      {/* Confirmar firma */}
+      <ConfirmDialog
+        open={confirmSignOpen}
+        title="Confirmar firma del documento"
+        description={
+          `${fileName ? `Archivo: ${fileName}\n` : ''}` +
+          `Hash: ${fileHash}\n` +
+          `Wallet: ${currentWallet?.address ? `${currentWallet.address.slice(0, 5)}...${currentWallet.address.slice(-5)}` : ''}`
+        }
+        confirmText="Firmar"
+        cancelText="Cancelar"
+        confirmStyle="success"
+        onConfirm={confirmSign}
+        onCancel={() => setConfirmSignOpen(false)}
+      />
+
+      {/* Confirmar almacenamiento */}
+      <ConfirmDialog
+        open={confirmStoreOpen}
+        title="Confirmar almacenamiento en blockchain"
+        description={
+          `Este proceso costará gas y no se puede deshacer.\n\n` +
+          `Hash: ${fileHash}\n` +
+          `Firmante: ${currentWallet?.address ? `${currentWallet.address.slice(0, 5)}...${currentWallet.address.slice(-5)}` : ''}`
+        }
+        confirmText="Almacenar"
+        cancelText="Cancelar"
+        confirmStyle="primary"
+        onConfirm={confirmStore}
+        onCancel={() => setConfirmStoreOpen(false)}
+      />
       {/* Success Message */}
       {success && (
         <div className="bg-emerald-100 border-2 border-emerald-400 p-4 rounded-xl flex items-start space-x-3">

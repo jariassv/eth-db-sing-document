@@ -43,17 +43,30 @@ export function useContract() {
   }, []);
 
   // Almacenar documento en la blockchain
+  type StoreResult =
+    | { ok: true; txHash: string; receipt: any }
+    | { ok: false; reason: 'exists' | 'rejected' | 'precheck_failed'; message: string };
+
   const storeDocumentHash = async (
     hash: string,
     timestamp: number,
     signature: string,
     signer: string
-  ) => {
+  ): Promise<StoreResult> => {
     if (!contract || !isConnected) {
       throw new Error('Contrato no disponible o wallet no conectada');
     }
 
     try {
+      // Pre-chequeo: evitar enviar transacción si ya existe
+      try {
+        const alreadyStored = await (contract as any).isDocumentStored(hash);
+        if (alreadyStored) {
+          return { ok: false, reason: 'exists', message: 'El documento ya existe en la blockchain' };
+        }
+      } catch {
+        // Si el pre-chequeo falla por RPC, continuamos sin interrumpir
+      }
       const signerInstance = getSigner();
       if (!signerInstance) {
         throw new Error('No se pudo obtener el signer');
@@ -81,13 +94,28 @@ export function useContract() {
       const receipt = await tx.wait();
       console.log('Transacción confirmada:', receipt);
       
-      return {
-        txHash: tx.hash,
-        receipt
-      };
+      return { ok: true, txHash: tx.hash, receipt };
     } catch (error) {
+      // Normalizar mensajes de error (ethers v6) y evitar logs ruidosos para errores esperados
+      const err = error as any;
+      const reason = (err?.reason || err?.shortMessage || err?.message || '').toLowerCase();
+
+      if (reason.includes('already exists')) {
+        // Error esperado: documento duplicado
+        return { ok: false, reason: 'exists', message: 'El documento ya existe en la blockchain' };
+      }
+      if (reason.includes('user rejected')) {
+        // Error esperado: usuario rechazó
+        return { ok: false, reason: 'rejected', message: 'Transacción rechazada por el usuario' };
+      }
+
+      // Otros errores: log y re-lanzar con mensaje legible
       console.error('Error almacenando documento:', error);
-      throw error;
+      return {
+        ok: false,
+        reason: 'precheck_failed',
+        message: err?.reason || err?.shortMessage || err?.message || 'Error al almacenar el documento',
+      };
     }
   };
 
