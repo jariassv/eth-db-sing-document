@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, CheckCircle, XCircle, AlertCircle, Loader } from 'lucide-react';
+import { Search, CheckCircle, XCircle, AlertCircle, Loader2, Shield, User, Clock, Hash, FileText } from 'lucide-react';
 import { ethers } from 'ethers';
 import { useContract } from '@/hooks/useContract';
 import FileUploader from './FileUploader';
@@ -36,12 +36,20 @@ export default function DocumentVerifier() {
   // Verificar documento
   const handleVerifyDocument = async () => {
     if (!fileHash) {
-      alert('Por favor selecciona un archivo primero');
+      setResult({
+        isValid: false,
+        document: null,
+        error: 'Por favor selecciona un archivo primero'
+      });
       return;
     }
 
     if (!signerAddress) {
-      alert('Por favor ingresa la dirección del firmante');
+      setResult({
+        isValid: false,
+        document: null,
+        error: 'Por favor ingresa la dirección del firmante'
+      });
       return;
     }
 
@@ -108,110 +116,154 @@ export default function DocumentVerifier() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Verificar Documento</h2>
-        <p className="text-gray-600">Sube un archivo y verifica su autenticidad en la blockchain</p>
-      </div>
-
-      {/* Subir archivo */}
-      <div className="bg-white rounded-lg border p-6">
-        <h3 className="font-medium text-gray-900 mb-4">1. Seleccionar archivo</h3>
+    <div className="space-y-8">
+      {/* File Upload Section */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <FileText className="h-5 w-5 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">1. Select File to Verify</h3>
+        </div>
         <FileUploader onFileHash={handleFileHash} disabled={isVerifying} />
       </div>
 
-      {/* Dirección del firmante */}
-      <div className="bg-white rounded-lg border p-6">
-        <h3 className="font-medium text-gray-900 mb-4">2. Dirección del firmante</h3>
+      {/* Signer Address Section */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="p-2 bg-purple-100 rounded-lg">
+            <User className="h-5 w-5 text-purple-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">2. Enter Signer Address</h3>
+        </div>
+        
         <div className="space-y-4">
           <input
             type="text"
             value={signerAddress}
             onChange={(e) => setSignerAddress(e.target.value)}
             placeholder="0x..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm placeholder-gray-400"
             disabled={isVerifying}
           />
           <p className="text-sm text-gray-500">
-            Ingresa la dirección Ethereum del firmante original del documento
+            Enter the Ethereum address of the original signer of the document
           </p>
         </div>
       </div>
 
-      {/* Botón de verificación */}
+      {/* Verify Button */}
       <div className="text-center">
         <button
           onClick={handleVerifyDocument}
           disabled={!fileHash || !signerAddress || isVerifying}
-          className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 mx-auto"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2 mx-auto"
         >
           {isVerifying ? (
             <>
-              <Loader className="h-5 w-5 animate-spin" />
-              <span>Verificando...</span>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Verifying...</span>
             </>
           ) : (
             <>
               <Search className="h-5 w-5" />
-              <span>Verificar Documento</span>
+              <span>Verify Document</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Resultado de verificación */}
+      {/* Verification Result */}
       {result && (
-        <div className={`rounded-lg p-6 ${
-          result.isValid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+        <div className={`card ${
+          result.isValid ? 'border-green-200 bg-green-50/50' : 'border-red-200 bg-red-50/50'
         }`}>
-          <div className="flex items-center space-x-2 mb-4">
-            {result.isValid ? (
-              <>
-                <CheckCircle className="h-6 w-6 text-green-500" />
-                <span className="text-lg font-medium text-green-900">✅ Documento VÁLIDO</span>
-              </>
-            ) : (
-              <>
-                <XCircle className="h-6 w-6 text-red-500" />
-                <span className="text-lg font-medium text-red-900">❌ Documento INVÁLIDO</span>
-              </>
-            )}
+          <div className="flex items-center space-x-3 mb-6">
+            <div className={`p-2 rounded-lg ${
+              result.isValid ? 'bg-green-100' : 'bg-red-100'
+            }`}>
+              {result.isValid ? (
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              ) : (
+                <XCircle className="h-6 w-6 text-red-600" />
+              )}
+            </div>
+            <h3 className={`text-xl font-bold ${
+              result.isValid ? 'text-green-900' : 'text-red-900'
+            }`}>
+              {result.isValid ? '✅ Document VALID' : '❌ Document INVALID'}
+            </h3>
           </div>
 
           {result.error && (
-            <div className="mb-4 p-3 bg-red-100 rounded border border-red-200">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-                <span className="text-red-800">{result.error}</span>
+            <div className="status-error p-4 rounded-xl mb-6">
+              <div className="flex items-center space-x-3">
+                <AlertCircle className="h-5 w-5 text-red-600" />
+                <p className="text-sm font-medium text-red-800">{result.error}</p>
               </div>
             </div>
           )}
 
           {result.document && (
-            <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Información del documento:</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-600">Hash:</span>
-                  <code className="block mt-1 text-xs bg-gray-100 px-2 py-1 rounded break-all">
-                    {result.document.hash}
-                  </code>
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <Shield className="h-5 w-5 text-gray-600" />
                 </div>
-                <div>
-                  <span className="font-medium text-gray-600">Firmante:</span>
-                  <code className="block mt-1 text-xs bg-gray-100 px-2 py-1 rounded">
-                    {formatAddress(result.document.signer)}
-                  </code>
+                <h4 className="text-lg font-semibold text-gray-900">Document Information</h4>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Hash className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-600">Document Hash</span>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <code className="text-xs font-mono text-gray-700 break-all">
+                        {result.document.hash}
+                      </code>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <User className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-600">Signer Address</span>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <code className="text-sm font-mono text-gray-700">
+                        {result.document.signer}
+                      </code>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-medium text-gray-600">Fecha de firma:</span>
-                  <span className="block mt-1">{formatTimestamp(result.document.timestamp)}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-600">Firma:</span>
-                  <code className="block mt-1 text-xs bg-gray-100 px-2 py-1 rounded break-all">
-                    {result.document.signature.slice(0, 20)}...
-                  </code>
+                
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-600">Signed Date</span>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-sm text-gray-700">
+                        {formatTimestamp(result.document.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Shield className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-600">Digital Signature</span>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <code className="text-xs font-mono text-gray-700 break-all">
+                        {result.document.signature.slice(0, 40)}...
+                      </code>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

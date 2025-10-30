@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Upload, File, Hash } from 'lucide-react';
+import { Upload, File, Hash, Loader2, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { ethers } from 'ethers';
 
 interface FileUploaderProps {
@@ -13,6 +13,8 @@ export default function FileUploader({ onFileHash, disabled = false }: FileUploa
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [calculatedHash, setCalculatedHash] = useState<string>('');
   const [isCalculating, setIsCalculating] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Calcular hash del archivo
@@ -44,12 +46,12 @@ export default function FileUploader({ onFileHash, disabled = false }: FileUploa
   };
 
   // Manejar selección de archivo
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileSelect = async (file: File) => {
     if (!file) return;
 
     setSelectedFile(file);
     setIsCalculating(true);
+    setError('');
 
     try {
       const hash = await calculateFileHash(file);
@@ -57,9 +59,38 @@ export default function FileUploader({ onFileHash, disabled = false }: FileUploa
       onFileHash(hash, file);
     } catch (error) {
       console.error('Error calculando hash:', error);
-      alert('Error calculando el hash del archivo');
+      setError('Error calculando el hash del archivo. Por favor, inténtalo de nuevo.');
     } finally {
       setIsCalculating(false);
+    }
+  };
+
+  // Manejar input de archivo
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  // Manejar drag and drop
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      handleFileSelect(file);
     }
   };
 
@@ -67,6 +98,7 @@ export default function FileUploader({ onFileHash, disabled = false }: FileUploa
   const clearFile = () => {
     setSelectedFile(null);
     setCalculatedHash('');
+    setError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -82,78 +114,136 @@ export default function FileUploader({ onFileHash, disabled = false }: FileUploa
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+    <div className="space-y-6">
+      {/* Upload Area */}
+      <div
+        className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 ${
+          isCalculating
+            ? "border-blue-300 bg-blue-50"
+            : selectedFile
+            ? "border-green-300 bg-green-50"
+            : isDragOver
+            ? "border-blue-400 bg-blue-50"
+            : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/50"
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <input
           ref={fileInputRef}
           type="file"
-          onChange={handleFileSelect}
+          onChange={handleFileInputChange}
           disabled={disabled || isCalculating}
-          className="hidden"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           accept="*/*"
         />
         
         <div className="space-y-4">
-          <div className="flex justify-center">
-            {isCalculating ? (
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            ) : (
-              <Upload className="h-12 w-12 text-gray-400" />
-            )}
-          </div>
-          
-          <div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={disabled || isCalculating}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              {isCalculating ? 'Calculando...' : 'Seleccionar Archivo'}
-            </button>
-          </div>
-          
-          <p className="text-sm text-gray-500">
-            {isCalculating 
-              ? 'Calculando hash del archivo...' 
-              : 'Haz clic para seleccionar un archivo'
-            }
-          </p>
+          {isCalculating ? (
+            <div className="flex flex-col items-center space-y-3">
+              <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
+              <p className="text-lg font-medium text-blue-600">Calculating hash...</p>
+              <p className="text-sm text-blue-500">Please wait while we process your file</p>
+            </div>
+          ) : selectedFile ? (
+            <div className="flex flex-col items-center space-y-3">
+              <div className="p-3 bg-green-100 rounded-full">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <p className="text-lg font-medium text-green-600">File uploaded successfully!</p>
+              <p className="text-sm text-green-500">Hash calculated and ready for signing</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center space-y-3">
+              <div className="p-3 bg-gray-100 rounded-full">
+                <Upload className="h-8 w-8 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-lg font-medium text-gray-900">Drop your file here</p>
+                <p className="text-sm text-gray-500">or click to browse</p>
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={disabled || isCalculating}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                Select File
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Información del archivo seleccionado */}
+      {/* Error Message */}
+      {error && (
+        <div className="status-error p-4 rounded-xl flex items-center space-x-3">
+          <AlertCircle className="h-5 w-5 text-red-600" />
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      )}
+
+      {/* File Information */}
       {selectedFile && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center space-x-2 mb-2">
-            <File className="h-5 w-5 text-blue-500" />
-            <span className="font-medium text-gray-900">{selectedFile.name}</span>
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <File className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">File Information</h3>
+            </div>
+            <button
+              onClick={clearFile}
+              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Remove file"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
           
-          <div className="text-sm text-gray-600 space-y-1">
-            <p>Tamaño: {formatFileSize(selectedFile.size)}</p>
-            <p>Tipo: {selectedFile.type || 'Desconocido'}</p>
-          </div>
-
-          {/* Hash calculado */}
-          {calculatedHash && (
-            <div className="mt-3 p-3 bg-blue-50 rounded border">
-              <div className="flex items-center space-x-2 mb-2">
-                <Hash className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium text-blue-900">Hash del archivo:</span>
-              </div>
-              <div className="text-xs font-mono text-blue-800 break-all">
-                {calculatedHash}
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-gray-500">Name</p>
+              <p className="text-sm text-gray-900 truncate" title={selectedFile.name}>
+                {selectedFile.name}
+              </p>
             </div>
-          )}
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-gray-500">Size</p>
+              <p className="text-sm text-gray-900">
+                {formatFileSize(selectedFile.size)}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-gray-500">Type</p>
+              <p className="text-sm text-gray-900">
+                {selectedFile.type || "Unknown"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-          {/* Botón para limpiar */}
-          <button
-            onClick={clearFile}
-            className="mt-3 text-sm text-red-600 hover:text-red-800 transition-colors"
-          >
-            Limpiar selección
-          </button>
+      {/* Hash Display */}
+      {calculatedHash && (
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Hash className="h-5 w-5 text-green-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Document Hash</h3>
+          </div>
+          
+          <div className="bg-gray-50 rounded-xl p-4">
+            <p className="text-sm font-mono text-gray-700 break-all leading-relaxed">
+              {calculatedHash}
+            </p>
+          </div>
+          
+          <p className="text-xs text-gray-500 mt-3">
+            This is the Keccak256 hash of your file. It will be used to verify the document's integrity and authenticity on the blockchain.
+          </p>
         </div>
       )}
     </div>
