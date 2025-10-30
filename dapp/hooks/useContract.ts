@@ -91,7 +91,7 @@ export function useContract() {
     }
   };
 
-  // Verificar documento
+  // Verificar documento (solo lectura - no emite eventos)
   const verifyDocument = async (
     hash: string,
     signer: string,
@@ -102,7 +102,8 @@ export function useContract() {
     }
 
     try {
-      const isValid = await (contract as any).verifyDocument(hash, signer, signature);
+      // Usar la función view del contrato
+      const isValid = await (contract as any).verifyDocumentView(hash, signer, signature);
       console.log('Verificación resultado:', isValid);
       return isValid;
     } catch (error) {

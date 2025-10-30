@@ -5,14 +5,14 @@ echo "🚀 Configurando ETH Document Registry..."
 # Crear archivo .env.local con la dirección del contrato desplegado
 cat > dapp/.env.local << 'EOF'
 # Configuración de la aplicación
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
 NEXT_PUBLIC_RPC_URL=http://localhost:8545
 NEXT_PUBLIC_CHAIN_ID=31337
 NEXT_PUBLIC_MNEMONIC="test test test test test test test test test test test junk"
 EOF
 
 echo "✅ Archivo .env.local creado con la dirección del contrato desplegado"
-echo "📋 Dirección del contrato: 0x5FbDB2315678afecb367f032d93F642f64180aa3"
+echo "📋 Dirección del contrato: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 echo ""
 echo "🔧 Para probar la aplicación:"
 echo "1. Asegúrate de que Anvil esté corriendo: anvil"

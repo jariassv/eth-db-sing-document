@@ -86,7 +86,7 @@ contract DocumentRegistry {
     }
 
     /**
-     * @notice Verifica la autenticidad de un documento
+     * @notice Verifica la autenticidad de un documento (con eventos)
      * @param _hash Hash del documento a verificar
      * @param _signer Dirección del firmante esperado
      * @param _signature Firma a verificar
@@ -108,6 +108,30 @@ contract DocumentRegistry {
                        keccak256(documents[_hash].signature) == keccak256(_signature);
 
         emit DocumentVerified(_hash, documents[_hash].signer, isValid);
+        return isValid;
+    }
+
+    /**
+     * @notice Verifica la autenticidad de un documento (solo lectura, sin eventos)
+     * @param _hash Hash del documento a verificar
+     * @param _signer Dirección del firmante esperado
+     * @param _signature Firma a verificar
+     * @return bool true si el documento existe y la firma coincide
+     */
+    function verifyDocumentView(
+        bytes32 _hash,
+        address _signer,
+        bytes memory _signature
+    ) external view returns (bool) {
+        // Verificar que el documento existe
+        if (documents[_hash].signer == address(0)) {
+            return false;
+        }
+
+        // Verificar que el firmante coincide
+        bool isValid = documents[_hash].signer == _signer &&
+                       keccak256(documents[_hash].signature) == keccak256(_signature);
+
         return isValid;
     }
 
